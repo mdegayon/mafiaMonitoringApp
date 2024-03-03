@@ -5,27 +5,77 @@ namespace Src;
 use Src\MafiaState;
 use Src\tree\NodeData;
 
-class Mobster implements  NodeData {
-    const NULL_ID = 0;
+class Mobster{
 
-    private int $id;
     private MafiaState $state;
     private String $firstName;
     private String $lastName;
     private String $nickname;
-    private Mobster|null $boss;
-    private Array $subordinates;
 
-    public function __construct(int $id, String $firstName, String $lastName, String $nickname, Mobster|null $boss, Array $subordinates) {
-        $this->id = $id;
+    private \DateTime $recruitmentDate;
+
+    const NULL_ID = -1;
+
+    public function __construct(String $firstName, String $lastName, String $nickname, \DateTime $recruitment_date)
+    {
         $this->state = MafiaState::Active;
-        
+
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->nickname = $nickname;
-        $this->boss = $boss;
-                
-        $this->subordinates = $subordinates;
+        $this->recruitmentDate = $recruitment_date;
+    }
+
+    public function getRecruitmentDate() : \DateTime
+    {
+        return $this->recruitmentDate;
+    }
+
+    public function getState() : MafiaState{
+        return $this->state;
+    }
+
+    public function setState(MafiaState $state) : void{
+        $this->state = $state;
+    }
+
+    public function __toString(): string
+    {
+        return $this->toString();
+    }
+
+    public function toString(): String {
+        if (!empty($this->nickname)) {
+            $mobsterAsString = sprintf(
+                "%s \"%s\" %s",
+                $this->firstName,
+                $this->nickname,
+                $this->lastName
+            );
+        } else {
+            $mobsterAsString = sprintf(
+                "%s %s",
+                $this->firstName,
+                $this->lastName
+            );
+        }
+
+        return $mobsterAsString;
+    }
+
+    public function getKey() : string {
+        return sprintf(
+            "%s,%s.AKA=%s",
+            $this->lastName,
+            $this->firstName,
+            $this->nickname
+        );
+    }
+
+
+
+    public function getId() : int{
+        return $this->id;
     }
 
     public function addSubordinate(Mobster $subordinate): void { 
@@ -42,27 +92,7 @@ class Mobster implements  NodeData {
         $subordinate->boss = null;
         unset( $this->subordinates[$subordinate->id] );
     }
-    
-    public function toString(): String {
-        if (!empty($this->nickname)) {
-            $mobsterAsString = sprintf(
-                "[%d] %s \"%s\" %s",
-                $this->id,
-                $this->firstName,
-                $this->nickname,
-                $this->lastName
-            );
-        } else {
-            $mobsterAsString = sprintf(
-                "[%d] %s %s",
-                $this->id,
-                $this->firstName,
-                $this->lastName
-            );
-        }
 
-        return $mobsterAsString;
-    }
     
     public function countSubordinates(): int { 
         $subordinatesCount = 0;
@@ -76,14 +106,6 @@ class Mobster implements  NodeData {
     
     public function countDirectSubordinates() : int {        
         return sizeof($this->subordinates);
-    }
-
-    public function getState() : MafiaState{
-        return $this->state;
-    }
-    
-    public function setState(MafiaState $state) : void{
-        $this->state = $state;
     }
     
     public function getBoss() : Mobster|null {
@@ -124,10 +146,6 @@ class Mobster implements  NodeData {
         }
     }
     
-    public function getId() : int{
-        return $this->id;
-    }
-    
     private function changeBossOfSubordinate(Mobster $newBoss, Mobster $subordinate) : void {
 
         $this->removeSubordinate($subordinate);
@@ -136,8 +154,4 @@ class Mobster implements  NodeData {
         }
     }
 
-    public function __toString(): string
-    {
-        return $this->toString();
-    }
 }

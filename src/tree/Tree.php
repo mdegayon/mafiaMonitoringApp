@@ -15,9 +15,9 @@ class Tree
     }
 
     public function traverse(Node $node, $level = 0) : void {
-        if ($node) {
-            echo str_repeat("-", $level) . $node->getData() . PHP_EOL;
-            foreach ($node->children as $child) {
+        if ($node !== null) {
+            echo str_repeat("-", $level) . $node . PHP_EOL;
+            foreach ($node->getChildren() as $child) {
                 $this->traverse($child, $level + 1);
             }
         }

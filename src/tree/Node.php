@@ -4,16 +4,19 @@ namespace Src\tree;
 
 class Node
 {
-    public NodeData $data;
-    public $children = [];
-    public Node $parent;
+    protected mixed $data;
+    protected $children = [];
+    protected Node|null $parent = self::EMPTY_NODE;
 
-    public function __construct(NodeData $data)
+    const MISSING_ID = -1;
+    const EMPTY_NODE = null;
+
+    public function __construct($data)
     {
         $this->data = $data;
     }
 
-    public function getData() : NodeData
+    public function getData() : mixed
     {
         return $this->data;
     }
@@ -23,20 +26,30 @@ class Node
         $this->data = $data;
     }
 
-    public function getParent() : Node|null {
+    public function getParent() : Node|null
+    {
         return $this->parent;
     }
 
-    public function setParent(Node $parent) : void{
+    public function setParent(Node|null $parent) : void
+    {
         $this->parent = $parent;
     }
 
-    public function addChild(Node $node) : void{
+    public function addChild(Node $node) : void
+    {
         $this->children[] = $node;
+        $node->setParent($this);
     }
 
-    public function getChilds() : array{
+    public function getChildren() : array
+    {
         return $this->children;
+    }
+
+    public function __toString(): string
+    {
+        return $this->data->__toString();
     }
 
 }

@@ -1,71 +1,30 @@
 <?php
     declare(strict_types=1);
-    require '../vendor/autoload.php';
+    require './vendor/autoload.php';
 
-    use Src\MafiaTree;
     use Src\Mobster;
     use Src\FBITrackingMafiaApp;
 
-    
+    use Src\tree\Tree;
+    use Src\tree\Node;
+
+$donVito = new Mobster("Vito", "Corleone", "The Godfather", new \DateTime('1910-02-01'));
+    $sonny = new Mobster("Santino", "Corleone", "Sonny", new \DateTime('1935-04-01'));
+    $fredo = new Mobster("Frederico", "Corleone", "Fredo", new \DateTime('1938-01-01'));
+    $mike = new Mobster("Michele", "Corleone", "Mike", new \DateTime('1940-06-01'));
+    $clemenza = new Mobster("Peter", "Clemenza", "Fat Clemenza", new \DateTime('1918-10-01'));
+    $frankie = new Mobster("Francesco", "Pentangeli", "Frankie 5 Angels", new \DateTime('1920-02-01'));
+    $carlo = new Mobster("Carlo", "Rizzi", "", new \DateTime('1930-09-01'));
+
+    $organization = new \Src\MafiaOrganization($donVito);
+    $organization->addMobster($mike, $donVito);
+    $organization->addMobster($fredo, $donVito);
+    $organization->addMobster($clemenza, $mike);
+    $organization->addMobster($clemenza, $frankie);
+    $organization->addMobster($carlo, $clemenza);
+
+    $organization->print();
+
+    echo "Ende \n";
 
     exit;
-
-    $mobsters = new MafiaTree();
-
-    $capoId = $mobsters->addMobster(
-        "Vito",
-        "Corleone",
-        "Don Vito",
-        Mobster::NULL_ID,
-    );
-    $mikeId = $mobsters->addMobster(
-        "Michael",
-        "Corleone",
-        "Mike",
-        $capoId,
-    );    
-    $fredoId = $mobsters->addMobster(
-        "Frederico",
-        "Corleone",
-        "Fredo",
-        $capoId,
-    );
-    $johnId = $mobsters->addMobster(
-        "John",
-        "Doe",
-        "",
-        $mikeId,
-    );    
-    
-    $capo = $mobsters->getMobster($capoId);
-    $mike = $mobsters->getMobster($mikeId);
-    $fredo = $mobsters->getMobster($fredoId);
-    $john = $mobsters->getMobster($johnId);
-
-    echo $capo->toString(). "\n";
-    echo $mike->toString(). "\n";
-    echo $fredo->toString(). "\n";
-    echo $john->toString(). "\n";
-
-    echo $capo->countSubordinates() ."\n";
-    echo $mike->countSubordinates() ."\n";
-    echo $fredo->countSubordinates() ."\n";
-    echo $john->countSubordinates() ."\n";
-    
-    $app = new FBITrackingMafiaApp();
-    
-    $app->sendToPrison($mike);
-    
-    echo "\n\n\n";    
-    echo $capo->countSubordinates() ."\n";
-    echo $mike->countSubordinates() ."\n";
-    echo $fredo->countSubordinates() ."\n";    
-    echo $john->countSubordinates() ."\n";    
-    
-    $app->releaseFromPrison($mike);
-    
-    echo "\n\n\n";    
-    echo $capo->countSubordinates() ."\n";
-    echo $mike->countSubordinates() ."\n";
-    echo $fredo->countSubordinates() ."\n";    
-    echo $john->countSubordinates() ."\n";
