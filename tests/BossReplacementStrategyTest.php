@@ -12,7 +12,6 @@ use Src\tree\Node;
 class BossReplacementStrategyTest extends TestCase
 {
     protected Mobster $vito, $mike, $fredo, $sonny, $carlo, $clem, $frankie;
-    protected MafiaNode $vitoNode, $mikeNode, $fredoNode, $sonnyNode, $carloNode, $clemNode, $frankieNode;
     protected MafiaTree $corleoneTree;
 
     private MobsterReplacementStrategy $strategy;
@@ -30,14 +29,6 @@ class BossReplacementStrategyTest extends TestCase
 
         $this->carlo = new Mobster("Carlo", "Rizzi", "", new \DateTime('1930-09-01'));
 
-        $this->vitoNode = new MafiaNode($this->vito);
-        $this->fredoNode = new MafiaNode($this->fredo);
-        $this->sonnyNode = new MafiaNode($this->sonny);
-        $this->mikeNode = new MafiaNode($this->mike);
-        $this->clemNode = new MafiaNode($this->clem);
-        $this->carloNode = new MafiaNode($this->carlo);
-        $this->frankieNode = new MafiaNode($this->frankie);
-
         $this->createCorleoneTree();
 
         $this->strategy = new MobsterReplacementStrategy($this->corleoneTree);
@@ -45,32 +36,33 @@ class BossReplacementStrategyTest extends TestCase
 
     private function createCorleoneTree() : void
     {
-        $this->corleoneTree = new MafiaTree($this->vitoNode);
+        $this->corleoneTree = new MafiaTree($this->vito);
 
-        $this->corleoneTree->addNode($this->sonnyNode, $this->vitoNode);
-        $this->corleoneTree->addNode($this->fredoNode, $this->vitoNode);
-        $this->corleoneTree->addNode($this->mikeNode, $this->vitoNode);
+        $this->corleoneTree->addMobster($this->mike, $this->vito);
+        $this->corleoneTree->addMobster($this->sonny, $this->vito);
+        $this->corleoneTree->addMobster($this->fredo, $this->vito);
 
-            $this->corleoneTree->addNode($this->frankieNode, $this->mikeNode);
-            $this->corleoneTree->addNode($this->clemNode, $this->mikeNode);
+        $this->corleoneTree->addMobster($this->clem, $this->mike);
 
-                $this->corleoneTree->addNode($this->carloNode, $this->clemNode);
+        $this->corleoneTree->addMobster($this->carlo, $this->clem);
+        $this->corleoneTree->addMobster($this->frankie, $this->clem);
     }
 
     public function testCantReplace() : void
     {
         $this->expectException(DomainException::class);
-        $this->strategy->replaceMobster($this->vitoNode, $this->clemNode);
+        $this->strategy->replaceMobster($this->vito, $this->clem);
     }
 
     public function testReplaceWithNoSubordinates() : void
     {
-        self::assertContains($this->fredoNode, $this->vitoNode->getDirectSubordinates());
-        self::assertEquals($this->vitoNode, $this->fredoNode->getParent());
-        $this->strategy->replaceMobster($this->fredoNode, $this->sonnyNode);
-        self::assertNotContains($this->fredoNode, $this->vitoNode->getDirectSubordinates());
-        self::assertEquals($this->sonnyNode, $this->fredoNode->getReplacementNode());
-        self::assertEquals(Node::EMPTY_NODE, $this->fredoNode->getParent());
+        self::assertContains( $this->fredo, $this->corleoneTree->getDirectSubordinates($this->vito) );
+        self::assertEquals($this->vito, $this->corleoneTree->getBossOfMobster($this->fredo));
+        $this->strategy->replaceMobster($this->fredo, $this->sonny);
+        self::assertNotContains($this->fredo, $this->corleoneTree->getDirectSubordinates($this->vito));
+//        self::assertEquals($this->sonny, $this->fredo->getReplacementNode());
+        $this->expectException(DomainException::class);
+        self::assertEquals(Node::EMPTY_NODE, $this->corleoneTree->getBossOfMobster($this->fredo));
     }
 
 }

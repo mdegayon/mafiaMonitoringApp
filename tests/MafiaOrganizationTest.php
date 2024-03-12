@@ -49,24 +49,24 @@ class MafiaOrganizationTest extends TestCase
     public function testRanks() : void
     {
         $this->createCorleoneTree();
-        self::assertEquals(MafiaTree::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->mike));
-        self::assertEquals(MafiaTree::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->sonny));
-        self::assertEquals(MafiaTree::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->fredo));
+        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->mike));
+        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->sonny));
+        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->fredo));
 
-        self::assertEquals(MafiaTree::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->vito));
-        self::assertEquals(MafiaTree::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->sonny, $this->vito));
-        self::assertEquals(MafiaTree::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->fredo, $this->vito));
+        self::assertEquals(MafiaOrganization::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->vito));
+        self::assertEquals(MafiaOrganization::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->sonny, $this->vito));
+        self::assertEquals(MafiaOrganization::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->fredo, $this->vito));
 
-        self::assertEquals(MafiaTree::RANK_EQUAL, $this->organization->compareMobsterRanks($this->sonny, $this->mike));
-        self::assertEquals(MafiaTree::RANK_EQUAL, $this->organization->compareMobsterRanks($this->fredo, $this->mike));
-        self::assertEquals(MafiaTree::RANK_EQUAL, $this->organization->compareMobsterRanks($this->fredo, $this->sonny));
+        self::assertEquals(MafiaOrganization::RANK_EQUAL, $this->organization->compareMobsterRanks($this->sonny, $this->mike));
+        self::assertEquals(MafiaOrganization::RANK_EQUAL, $this->organization->compareMobsterRanks($this->fredo, $this->mike));
+        self::assertEquals(MafiaOrganization::RANK_EQUAL, $this->organization->compareMobsterRanks($this->fredo, $this->sonny));
 
-        self::assertEquals(MafiaTree::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->clem));
-        self::assertEquals(MafiaTree::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->frankie));
-        self::assertEquals(MafiaTree::RANK_EQUAL, $this->organization->compareMobsterRanks($this->frankie, $this->clem));
-        self::assertEquals(MafiaTree::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->clem, $this->carlo));
+        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->clem));
+        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->frankie));
+        self::assertEquals(MafiaOrganization::RANK_EQUAL, $this->organization->compareMobsterRanks($this->frankie, $this->clem));
+        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->clem, $this->carlo));
     }
-    private function addSubordinatesToMobster(Mobster $mobster, int $subordinatesAmount) : void
+    private function addNSubordinatesToMobster(Mobster $mobster, int $subordinatesAmount) : void
     {
         for ($i = 0; $i < $subordinatesAmount; $i++){
             $randMobster = new Mobster(
@@ -80,7 +80,7 @@ class MafiaOrganizationTest extends TestCase
 
     }
 
-    public function testSendMobsterToPrison() : void
+    public function testSpecialSurveillance() : void
     {
         $this->createCorleoneTree();
 
@@ -92,7 +92,7 @@ class MafiaOrganizationTest extends TestCase
         self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->frankie));
         self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->carlo));
 
-        $this->addSubordinatesToMobster($this->frankie, 49);
+        $this->addNSubordinatesToMobster($this->frankie, 49);
 
         self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->vito));
         self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->mike));
@@ -102,7 +102,7 @@ class MafiaOrganizationTest extends TestCase
         self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->frankie));
         self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->carlo));
 
-        $this->addSubordinatesToMobster($this->carlo, 49);
+        $this->addNSubordinatesToMobster($this->carlo, 49);
 
         self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->vito));
         self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->mike));

@@ -2,7 +2,7 @@
 
 namespace Src\strategy;
 
-use Src\tree\mafia\MafiaNode;
+use Src\Mobster;
 use Src\tree\mafia\MafiaTree;
 
 class MobsterReplacementStrategy
@@ -14,19 +14,17 @@ class MobsterReplacementStrategy
         $this->mafiaTree = $mafiaTree;
     }
 
-    public function replaceMobster(MafiaNode $mobsterToReplace, MafiaNode $replacementBoss) : void
+    public function replaceMobster(Mobster $mobsterToReplace, Mobster $replacementBoss) : void
     {
-        $mobstersToRelocate = $mobsterToReplace->getDirectSubordinates();
+        $mobstersToRelocate = $this->mafiaTree->getDirectSubordinates($mobsterToReplace);
 
-        foreach ($mobstersToRelocate as $mobsterNode){
-
-            $mobsterNode->setOriginalBoss($mobsterToReplace);
-            $replacementBoss->addChild($mobsterNode);
+        foreach ($mobstersToRelocate as $mobster){
+            $this->mafiaTree->addMobster($mobster, $replacementBoss);
         }
 
-        $mobsterToReplace->setReplacementNode($replacementBoss);
+        //$mobsterToReplace->setReplacementNode($replacementBoss); TODO: SYX Discuss
 
-        $this->mafiaTree->removeNode($mobsterToReplace);
+        $this->mafiaTree->removeMobster($mobsterToReplace);
     }
 
 }

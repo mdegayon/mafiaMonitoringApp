@@ -2,13 +2,19 @@
 
 namespace Src;
 
-use Src\tree\mafia\MafiaNode;
 use Src\tree\mafia\MafiaTree;
 
 class ReplacementBossResolver
 {
 
-    public  function findReplacementBossFor(MafiaNode $replacedBoss) : MafiaNode|null
+    private MafiaTree $mafiaTree;
+
+    public function __construct(MafiaTree $mafiaTree)
+    {
+        $this->mafiaTree = $mafiaTree;
+    }
+
+    public  function findReplacementBossFor(Mobster $replacedBoss) : ?Mobster
     {
         $replacementBoss = $this->findReplacementFromPairs($replacedBoss);
 
@@ -19,15 +25,17 @@ class ReplacementBossResolver
         return $replacementBoss;
     }
 
-    private function findReplacementFromPairs(MafiaNode $replacedBoss) : MafiaNode|null
+    private function findReplacementFromPairs(Mobster $replacedBoss) : ?Mobster
     {   //TODO: Discuss with SYX
         $replacementBoss = null;
 
-        if ( !$replacedBoss->hasBoss()){
+        if ( !$this->mobsterHasBoss($replacedBoss)){
             return $replacementBoss;
         }
 
-        foreach ( $replacedBoss->getParent()->getChildren() as $replacementCandidate){
+        $replacedBossesBoss = $this->getMobsterBoss($replacedBoss);
+        $pairs = $this->getMobsterChildren($replacedBossesBoss);
+        foreach ( $pairs as $replacementCandidate){
 
             if ($replacementCandidate == $replacedBoss){
                 continue;
@@ -42,19 +50,31 @@ class ReplacementBossResolver
         return $replacementBoss;
     }
 
-    private function replacementCandidateIsOlderThan(MafiaNode $candidate, MafiaNode $other): bool
+    private function mobsterHasBoss(Mobster $mobster) : bool
     {
-        $candidateRecruitmentDate = $candidate->getData()->getRecruitmentDate();
-        $otherRecruitmentDate = $other->getData()->getRecruitmentDate();
-
-        return $candidateRecruitmentDate < $otherRecruitmentDate;
+        return !is_null( $this->getMobsterBoss($mobster) );
     }
 
-    private function replaceWithBossesBoss(MafiaNode $replacedBoss) : MafiaNode|null
+    private function getMobsterBoss(Mobster $mobster) : ?Mobster
+    {
+        return $this->mafiaTree->getBossOfMobster($mobster);
+    }
+
+    private function getMobsterChildren(Mobster $mobster) : array
+    {
+        return $this->mafiaTree->getDirectSubordinates($mobster);
+    }
+
+    private function replacementCandidateIsOlderThan(Mobster $candidate, Mobster $other): bool
+    {
+        return $candidate->getRecruitmentDate() < $other->getRecruitmentDate();
+    }
+
+    private function replaceWithBossesBoss(Mobster $replacedBoss) : ?Mobster
     {
         $replacementBoss = null;
-        if ($replacedBoss->hasBoss()){
-            $replacementBoss = $replacedBoss->getParent();
+        if (  $this->mobsterHasBoss($replacedBoss) ){
+            $replacementBoss = $this->getMobsterBoss($replacedBoss);
         }
         return $replacementBoss;
     }

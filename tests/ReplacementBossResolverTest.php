@@ -3,14 +3,12 @@
 use Src\Mobster;
 use Src\ReplacementBossResolver;
 use PHPUnit\Framework\TestCase;
-use Src\tree\mafia\MafiaNode;
 use Src\tree\mafia\MafiaTree;
 
 class ReplacementBossResolverTest extends TestCase
 {
 
     protected Mobster $vito, $mike, $fredo, $sonny, $carlo, $clem, $frankie;
-    protected MafiaNode $vitoNode, $mikeNode, $fredoNode, $sonnyNode, $carloNode, $clemNode, $frankieNode;
     protected MafiaTree $corleoneTree;
 
     protected ReplacementBossResolver $resolver;
@@ -28,31 +26,23 @@ class ReplacementBossResolverTest extends TestCase
 
         $this->carlo = new Mobster("Carlo", "Rizzi", "", new \DateTime('1930-09-01'));
 
-        $this->vitoNode = new MafiaNode($this->vito);
-        $this->fredoNode = new MafiaNode($this->fredo);
-        $this->sonnyNode = new MafiaNode($this->sonny);
-        $this->mikeNode = new MafiaNode($this->mike);
-        $this->clemNode = new MafiaNode($this->clem);
-        $this->carloNode = new MafiaNode($this->carlo);
-        $this->frankieNode = new MafiaNode($this->frankie);
-
         $this->createCorleoneTree();
 
-        $this->resolver = new ReplacementBossResolver();
+        $this->resolver = new ReplacementBossResolver($this->corleoneTree);
     }
 
     private function createCorleoneTree() : void
     {
-        $this->corleoneTree = new MafiaTree($this->vitoNode);
+        $this->corleoneTree = new MafiaTree($this->vito);
 
-        $this->corleoneTree->addNode($this->sonnyNode, $this->vitoNode);
-        $this->corleoneTree->addNode($this->fredoNode, $this->vitoNode);
-        $this->corleoneTree->addNode($this->mikeNode, $this->vitoNode);
+        $this->corleoneTree->addMobster($this->mike, $this->vito);
+        $this->corleoneTree->addMobster($this->sonny, $this->vito);
+        $this->corleoneTree->addMobster($this->fredo, $this->vito);
 
-            $this->corleoneTree->addNode($this->frankieNode, $this->mikeNode);
-            $this->corleoneTree->addNode($this->clemNode, $this->mikeNode);
+        $this->corleoneTree->addMobster($this->clem, $this->mike);
 
-                $this->corleoneTree->addNode($this->carloNode, $this->clemNode);
+        $this->corleoneTree->addMobster($this->carlo, $this->clem);
+        $this->corleoneTree->addMobster($this->frankie, $this->clem);
     }
 
     protected function tearDown(): void
@@ -62,35 +52,31 @@ class ReplacementBossResolverTest extends TestCase
 
     public function testNodeWithoutParentSubstitution() : void
     {
-        $replacementNode = $this->resolver->findReplacementBossFor($this->vitoNode);
+        $replacementNode = $this->resolver->findReplacementBossFor($this->vito);
         $this->assertNull($replacementNode);
     }
 
     public function testReplaceBoss() : void
     {
         self::assertEquals(
-            $this->sonnyNode,
-            $this->resolver->findReplacementBossFor($this->mikeNode)
+            $this->sonny,
+            $this->resolver->findReplacementBossFor($this->mike)
         );
-
         self::assertEquals(
-            $this->fredoNode,
-            $this->resolver->findReplacementBossFor($this->sonnyNode)
+            $this->fredo,
+            $this->resolver->findReplacementBossFor($this->sonny)
         );
-
         self::assertEquals(
-            $this->frankieNode,
-            $this->resolver->findReplacementBossFor($this->clemNode)
+            $this->mike,
+            $this->resolver->findReplacementBossFor($this->clem)
         );
-
         self::assertEquals(
-            $this->clemNode,
-            $this->resolver->findReplacementBossFor($this->frankieNode)
+            $this->carlo,
+            $this->resolver->findReplacementBossFor($this->frankie)
         );
-
         self::assertEquals(
-            $this->clemNode,
-            $this->resolver->findReplacementBossFor($this->carloNode)
+            $this->frankie,
+            $this->resolver->findReplacementBossFor($this->carlo)
         );
 
     }
