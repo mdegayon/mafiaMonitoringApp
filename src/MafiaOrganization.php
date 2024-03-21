@@ -3,7 +3,8 @@
 namespace Src;
 
 use Src\strategy\ActiveBossFinderStrategy;
-use Src\strategy\MobsterReplacementStrategy;
+use Src\strategy\ReplacementFinderStrategy;
+use Src\strategy\ReplacingMobsterStrategy;
 use Src\strategy\PositionRecoveryStrategy;
 use Src\tree\mafia\MafiaTree;
 use Src\tree\Node;
@@ -16,37 +17,39 @@ class MafiaOrganization {
             SECOND_RANKS_HIGHER = -1,
             RANK_EQUAL = 0;
 
-    private array $mobsters;
     private MafiaTree $mafiaTree;
 
-    private ReplacementBossResolver $resolver;
-    private MobsterReplacementStrategy $replacementStrategy;
+    private ReplacementFinderStrategy $replacementFinder;
+    private ReplacingMobsterStrategy $replacementStrategy;
     private PositionRecoveryStrategy $positionRecoveryStrategy;
 
     public function __construct(Mobster $theDon)
     {
         $this->mafiaTree = new MafiaTree($theDon);
-        $this->addMobsterToList($theDon->getKey(), $theDon);
 
-        $this->resolver = new ReplacementBossResolver($this->mafiaTree);
-        $this->replacementStrategy = new MobsterReplacementStrategy($this->mafiaTree);
-        $this->positionRecoveryStrategy = new PositionRecoveryStrategy(new ActiveBossFinderStrategy($this->mafiaTree));
-    }
-
-    private function addMobsterToList(string $key, Mobster $mobster) : void
-    {
-        $this->mobsters[$key] = $mobster;
+        $this->replacementFinder = new ReplacementFinderStrategy($this->mafiaTree);
+        $this->replacementStrategy = new ReplacingMobsterStrategy($this->mafiaTree);
+        $this->positionRecoveryStrategy = new PositionRecoveryStrategy($this->mafiaTree);
     }
 
     public function addMobster(Mobster $mobster, Mobster $boss) : void
     {
-        $this->mafiaTree->addMobster($mobster, $boss);
-        $this->addMobsterToList($mobster->getKey(), $mobster);
+        $node = $this->mafiaTree->addMobster($mobster, $boss);
     }
 
     public function countMobstersInOrganization() : int
     {
-        return sizeof($this->mobsters);
+        return $this->mafiaTree->countMobsters();
+    }
+
+    public function getBoss(Mobster $mobster) : Mobster
+    {
+        return $this->mafiaTree->getBossOfMobster($mobster);
+    }
+
+    public function getDirectSubordinateS(Mobster $mobster) : array
+    {
+        return $this->mafiaTree->getDirectSubordinates($mobster);
     }
 
     public function shouldPutUnderSpecialSurveillance(Mobster $mobster) : bool
@@ -73,32 +76,40 @@ class MafiaOrganization {
 
     private function findMobsterInList(string $key) : Mobster
     {
-        if (!array_key_exists($key, $this->mobsters)){
+        if (!array_key_exists($key, $this->mobsterNodes)){
             throw new \DomainException("Mobster with key=$key is missing from our records");
         }
-        return $this->mobsters[$key];
+        return $this->mobsterNodes[$key]->getData();
     }
 
-    /*
-    public function sendToPrison(Mobster $imprisonedMobster) : void
+    private function findNodeInList(string $key) : Node
     {
-        $imprisonedMobsterNode = $this->findMobsterInList($imprisonedMobster->getKey());
-        $imprisonedMobster->setState(MafiaState::Imprisoned);
+        if (!array_key_exists($key, $this->mobsterNodes)){
+            throw new \DomainException("Mobster with key=$key is missing from our records");
+        }
+        return $this->mobsterNodes[$key];
+    }
+
+    public function replaceImprisonedMobster(Mobster $imprisonedMobster) : Mobster
+    {
         // TODO Discuss with SYX (Should findReplacementBossFor throw the exception itself already ?)
-        $replacementBoss = $this->resolver->findReplacementBossFor($imprisonedMobsterNode);
-        if ($replacementBoss === Node::EMPTY_NODE){
+        $replacement = $this->replacementFinder->findReplacementFor($imprisonedMobster);
+        if ($replacement === Node::EMPTY_NODE){
             throw new \DomainException("Can't find replacement boss for Mobster. Can't send him to prison. Mobster: $imprisonedMobster");
         }
-        $this->replacementStrategy->replaceMobster($imprisonedMobsterNode, $replacementBoss);
+
+        $this->replacementStrategy->replaceMobster($imprisonedMobster, $replacement);
+
+        return $replacement;
     }
 
-    public function releaseFromPrison (Mobster $releasedMobster) : void
+    public function recoverMobsterPosition (Mobster $releasedMobster, MafiaPosition $position) : void
     {
-        $releasedMobsterNode = $this->findMobsterInList($releasedMobster->getKey());
-        $releasedMobster->setState(MafiaState::Active);
-
-        $this->positionRecoveryStrategy->recoverPositionOf($releasedMobsterNode);
+        $this->positionRecoveryStrategy->recoverPositionOf($releasedMobster, $position);
     }
-    */
 
+    public function mobsterBelongsToOrganization(Mobster $mobster) : bool
+    {
+        return $this->mafiaTree->contains($mobster);
+    }
 }

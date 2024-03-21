@@ -43,7 +43,7 @@ class Node
         $this->parent = $parent;
     }
 
-    public function addChild(Node $node): void
+    public function addChildNode(Node $node): void
     {
         $this->children[] = $node;
         $node->setParent($this);

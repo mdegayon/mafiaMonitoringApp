@@ -1,19 +1,18 @@
 <?php
 
 use Src\Mobster;
-use Src\ReplacementBossResolver;
+use Src\Prison;
 use PHPUnit\Framework\TestCase;
 use Src\tree\mafia\MafiaTree;
 
-class ReplacementBossResolverTest extends TestCase
+class PrisonTest extends TestCase
 {
 
     protected Mobster $vito, $mike, $fredo, $sonny, $carlo, $clem, $frankie;
     protected MafiaTree $corleoneTree;
+    protected Prison $prison;
 
-    protected ReplacementBossResolver $resolver;
-
-    public function setUp() : void
+    protected function setUp(): void
     {
         $this->vito = new Mobster("Vito", "Corleone", "The Godfather", new \DateTime('1910-02-01'));
 
@@ -28,7 +27,7 @@ class ReplacementBossResolverTest extends TestCase
 
         $this->createCorleoneTree();
 
-        $this->resolver = new ReplacementBossResolver($this->corleoneTree);
+        $this->prison = new Prison($this->corleoneTree);
     }
 
     private function createCorleoneTree() : void
@@ -44,40 +43,36 @@ class ReplacementBossResolverTest extends TestCase
         $this->corleoneTree->addMobster($this->carlo, $this->clem);
         $this->corleoneTree->addMobster($this->frankie, $this->clem);
     }
-
-    protected function tearDown(): void
+    public function testImprisonMobster()
     {
-        parent::tearDown();
+        $imprisonedMobster = $this->carlo;
+
+        $subordinates = $this->corleoneTree->getDirectSubordinates($imprisonedMobster);
+        $boss = $this->corleoneTree->getBossOfMobster($imprisonedMobster);
+        $replacement = $this->frankie;
+
+        $this->prison->imprisonMobster(
+            $imprisonedMobster,
+            $boss,
+            $subordinates,
+            $replacement
+        );
+
+        $position = $this->prison->getMobsterPosition($imprisonedMobster);
+
+        self::assertNotNull($position);
+        self::assertInstanceOf(\Src\MafiaPosition::class, $position);
+
+        self::assertEquals($boss, $position->getBoss());
+        self::assertEquals($replacement, $position->getReplacement());
+        self::assertEquals($subordinates, $position->getSubordinates());
+
+        self::assertEquals(\Src\MafiaState::Imprisoned, $imprisonedMobster->getState());
     }
 
-    public function testNodeWithoutParentSubstitution() : void
+    public function testReleaseMobster()
     {
-        $replacementNode = $this->resolver->findReplacementBossFor($this->vito);
-        $this->assertNull($replacementNode);
+        $this->expectNotToPerformAssertions();
     }
 
-    public function testReplaceBoss() : void
-    {
-        self::assertEquals(
-            $this->sonny,
-            $this->resolver->findReplacementBossFor($this->mike)
-        );
-        self::assertEquals(
-            $this->fredo,
-            $this->resolver->findReplacementBossFor($this->sonny)
-        );
-        self::assertEquals(
-            $this->mike,
-            $this->resolver->findReplacementBossFor($this->clem)
-        );
-        self::assertEquals(
-            $this->carlo,
-            $this->resolver->findReplacementBossFor($this->frankie)
-        );
-        self::assertEquals(
-            $this->frankie,
-            $this->resolver->findReplacementBossFor($this->carlo)
-        );
-
-    }
 }

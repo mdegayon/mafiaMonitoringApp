@@ -132,7 +132,7 @@ class MafiaTreeTest extends TestCase
         assertTrue($this->corleoneTree->contains($this->frankie));
         assertTrue($this->corleoneTree->contains($this->carlo));
 
-        $this->corleoneTree->removeMobster($this->mike);
+        $this->corleoneTree->removeMobster($this->mike, MafiaTree::REMOVE_MOBSTER_WITH_SUBORDINATES);
 
         self::assertCount(2, $this->corleoneTree->getDirectSubordinates($this->vito));
         assertEquals(3, $this->corleoneTree->countMobsters());

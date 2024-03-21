@@ -5,7 +5,7 @@ namespace Src\strategy;
 use Src\Mobster;
 use Src\tree\mafia\MafiaTree;
 
-class MobsterReplacementStrategy
+class ReplacingMobsterStrategy
 {
     private MafiaTree $mafiaTree;
 
@@ -19,10 +19,8 @@ class MobsterReplacementStrategy
         $mobstersToRelocate = $this->mafiaTree->getDirectSubordinates($mobsterToReplace);
 
         foreach ($mobstersToRelocate as $mobster){
-            $this->mafiaTree->addMobster($mobster, $replacementBoss);
+            $this->mafiaTree->moveMobster($mobster, $replacementBoss);
         }
-
-        //$mobsterToReplace->setReplacementNode($replacementBoss); TODO: SYX Discuss
 
         $this->mafiaTree->removeMobster($mobsterToReplace);
     }

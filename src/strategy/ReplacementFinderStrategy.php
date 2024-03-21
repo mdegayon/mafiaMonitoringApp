@@ -1,10 +1,11 @@
 <?php
 
-namespace Src;
+namespace Src\strategy;
 
+use Src\Mobster;
 use Src\tree\mafia\MafiaTree;
 
-class ReplacementBossResolver
+class ReplacementFinderStrategy
 {
 
     private MafiaTree $mafiaTree;
@@ -14,7 +15,7 @@ class ReplacementBossResolver
         $this->mafiaTree = $mafiaTree;
     }
 
-    public  function findReplacementBossFor(Mobster $replacedBoss) : ?Mobster
+    public  function findReplacementFor(Mobster $replacedBoss) : ?Mobster
     {
         $replacementBoss = $this->findReplacementFromPairs($replacedBoss);
 

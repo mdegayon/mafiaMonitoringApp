@@ -2,39 +2,41 @@
 
 namespace Src\strategy;
 
+use Src\MafiaPosition;
 use Src\MafiaState;
-use Src\tree\mafia\MafiaNode;
+use Src\Mobster;
+use Src\tree\mafia\MafiaTree;
 
 class PositionRecoveryStrategy
 {
-    private ActiveBossFinderStrategy $bossFinderStrategy;
+    private MafiaTree $mafiaTree;
 
-    public function __construct(ActiveBossFinderStrategy $bossFinderStrategy)
+    public function __construct(MafiaTree $mafiaTree)
     {
-        $this->bossFinderStrategy = $bossFinderStrategy;
+        $this->mafiaTree = $mafiaTree;
     }
 
-    public function recoverPositionOf(MafiaNode $releasedMobsterNode) : void
+    public function recoverPositionOf(Mobster $releasedMobster, MafiaPosition $position) : void
     {
-        $this->reassignSubordinates($releasedMobsterNode);
-        $this->reassignBoss($releasedMobsterNode);
+        $boss = $position->getBoss();
+        $subordinates = $position->getSubordinates();
+
+        $this->getMobsterBackIntoOrganization($releasedMobster, $boss);
+
+        $this->reassignMobsterSubordinates($releasedMobster, $subordinates);
     }
 
-    private function reassignSubordinates(MafiaNode $releasedMobsterNode) : void
+    private function reassignMobsterSubordinates(Mobster $releasedMobster, array $subordinates) : void
     {
-        foreach ($releasedMobsterNode->getDirectSubordinates() as $subordinate){
-
-            $temporaryBoss = $subordinate->getParent()->removeChild($subordinate);
-            $temporaryBoss->removeChild($subordinate);
-
-            $subordinate->setParent($releasedMobsterNode);
+        /* @var Mobster $subordinate */
+        foreach ($subordinates as $subordinate){
+            $this->mafiaTree->moveMobster($subordinate, $releasedMobster);
         }
     }
 
-    private function reassignBoss(MafiaNode $releasedMobsterNode) : void
+    private function getMobsterBackIntoOrganization(Mobster $releasedMobster, Mobster $boss) : void
     {
-        $newBoss = $this->bossFinderStrategy->findActiveBossFor($releasedMobsterNode);
-        $releasedMobsterNode->setParent($newBoss);
+        $this->mafiaTree->addMobster($releasedMobster, $boss);
     }
 
 }

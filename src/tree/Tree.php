@@ -28,7 +28,7 @@ class Tree
     {
         $node = new Node($data);
         $node->setParent($parent);
-        $parent->addChild($node);
+        $parent->addChildNode($node);
 
         return $node;
     }
@@ -55,7 +55,7 @@ class Tree
             $this->removeNode($node, $previousParent);
         }
 
-        $newParent->addChild($node);
+        $newParent->addChildNode($node);
 
         return true;
     }

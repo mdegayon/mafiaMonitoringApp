@@ -2,49 +2,70 @@
 
 namespace Src\strategy;
 
+use Src\MafiaOrganization;
+use Src\MafiaPosition;
 use Src\MafiaState;
-use Src\tree\mafia\MafiaNode;
-use Src\tree\mafia\MafiaTree;
-use Src\tree\Node;
+use Src\Mobster;
+use Src\Prison;
 
 class ActiveBossFinderStrategy
 {
-    private MafiaTree $mafiaTree;
+    private MafiaOrganization $org;
+    private Prison $prison;
 
-    private $mafiaNode;
-
-    public function __construct(MafiaTree $mafiaTree)
+    public function __construct(MafiaOrganization $organization, Prison $prison)
     {
-        $this->mafiaTree = $mafiaTree;
+        $this->org = $organization;
+        $this->prison = $prison;
     }
 
-    public function findActiveBossFor(MafiaNode $mafiaNode): MafiaNode
+    public function findActiveBossFor(MafiaPosition $position): Mobster
     {
-        $this->mafiaNode = $mafiaNode;
-
-        $activeBoss = $mafiaNode->getParent();
-        while ( !$this->isAnEmptyNodeOrHasActiveStatus($activeBoss) ){
-            $activeBoss = $activeBoss->getParent();
+        $boss = $position->getBoss();
+        while ( !$this->isEmptyOrHasActiveStatus($boss) ){
+            $boss = $this->findBoss($boss);
         }
 
-        $this->throwExceptionIfBossIsEmpty($activeBoss);
+        $this->checkBossIsNotEmpty($boss);
 
-        return $activeBoss;
+        return $boss;
     }
 
-    private function isAnEmptyNodeOrHasActiveStatus(MafiaNode $bossNode) : bool
+    private function findBoss(Mobster $mobster) : Mobster
     {
-        return  $bossNode == Node::EMPTY_NODE ||
-                $bossNode->getData()->getState == MafiaState::Active;
+        $boss = null;
+
+        if ( $this->isMobsterInPrison($mobster)){
+            $boss = $this->getReplacementOfImprisonedMobster($mobster);
+        }else{
+            $boss = $this->org->getBoss($mobster);
+        }
+
+        return $boss;
     }
 
-    private function throwExceptionIfBossIsEmpty(MafiaNode $boss) : void
+    private function isMobsterInPrison(Mobster $mobster) : bool
     {
-        if ($boss === Node::EMPTY_NODE){
+        return $mobster->getState() === MafiaState::Imprisoned;
+    }
+
+    private function getReplacementOfImprisonedMobster(Mobster $mobster) : Mobster
+    {
+        return $this->prison->getMobsterPosition($mobster)->getReplacement();
+    }
+
+    private function isEmptyOrHasActiveStatus(?Mobster $mobster) : bool
+    {
+        return  ($mobster === null) || ($mobster->getState() == MafiaState::Active);
+    }
+
+    private function checkBossIsNotEmpty(?Mobster $boss) : void
+    {
+        if ($boss === null){
             throw new \DomainException(
-                "Can't find active boss for Node. ".
-                "Either node is Organization's Don or every boss is dead or imprisoned." .
-                "Node: $this->mafiaNode"
+                "Can't find active boss for Mobster. ".
+                "Either this mobster is Organization's Don or every boss is dead or imprisoned." .
+                "Mobster: $boss"
             );
         }
     }

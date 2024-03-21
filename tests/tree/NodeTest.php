@@ -25,13 +25,13 @@ class NodeTest extends TestCase
         $this->grandChildE = new Node('e');
         $this->grandChildF = new Node('f');
 
-        $this->parentNode->addChild($this->childA);
-        $this->parentNode->addChild($this->childB);
-        $this->parentNode->addChild($this->childC);
+        $this->parentNode->addChildNode($this->childA);
+        $this->parentNode->addChildNode($this->childB);
+        $this->parentNode->addChildNode($this->childC);
 
-        $this->childA->addChild($this->grandChildD);
-        $this->childA->addChild($this->grandChildE);
-        $this->childA->addChild($this->grandChildF);
+        $this->childA->addChildNode($this->grandChildD);
+        $this->childA->addChildNode($this->grandChildE);
+        $this->childA->addChildNode($this->grandChildF);
     }
 
     protected function tearDown(): void
@@ -66,7 +66,7 @@ class NodeTest extends TestCase
         $parentNode = new Node('p');
         $childNode = new Node('c');
 
-        $parentNode->addChild($childNode);
+        $parentNode->addChildNode($childNode);
         self::assertTrue($childNode->hasParent());
         self::assertEquals($parentNode, $childNode->getParent());
         self::assertEquals($childNode, $parentNode->find('c'));

@@ -13,6 +13,9 @@ class MafiaTree
 
     const NO_THRESHOLD = PHP_INT_MAX;
 
+    const   REMOVE_MOBSTER_ONLY = 1,
+            REMOVE_MOBSTER_WITH_SUBORDINATES = 2;
+
     public function __construct(Mobster $rootData)
     {
         $this->mafiaTree = new Tree($rootData);
@@ -37,6 +40,11 @@ class MafiaTree
         return $this->mafiaTree->getRoot()->getData();
     }
 
+    public function getDonNode() : Node
+    {
+        return $this->mafiaTree->getRoot();
+    }
+
     public function print(): void
     {
         $this->mafiaTree->traverseFromRoot();
@@ -59,15 +67,17 @@ class MafiaTree
         return $mobsterNode->hasParent() ? $mobsterNode->getParent()->getData() : Node::EMPTY_NODE;
     }
 
-    public function addMobster(Mobster $mobster, Mobster $mobsterBoss) : void
+    public function addMobster(Mobster $mobster, Mobster $mobsterBoss) : Node
     {
         $mobsterBossNode = $this->findNode($mobsterBoss->getKey());
         $mobsterNode = $this->mafiaTree->add($mobster, $mobsterBossNode);
 
         $this->addNodeWithKey($mobsterNode, $mobster->getKey());
+
+        return $mobsterNode;
     }
 
-    public function removeMobster(Mobster $mobsterToRemove) : bool
+    public function removeMobster(Mobster $mobsterToRemove, $removeSubordinates = self::REMOVE_MOBSTER_ONLY ) : bool
     {
         $nodeRemoved = false; // TODO SYX Discuss naming conv
         $nodeToRemove = $this->findNode($mobsterToRemove->getKey());
@@ -82,13 +92,32 @@ class MafiaTree
 
         if ( $this->mafiaTree->remove($mobsterToRemove, $parentNode) ){
             $nodeRemoved =  $this->removeNode( $mobsterToRemove->getKey() );
+        }
 
-            foreach ($nodeToRemove->getChildren() as $child){
-                $nodeRemoved = $nodeRemoved && $this->removeMobster($child->getData());
-            }
+        if ($removeSubordinates === self::REMOVE_MOBSTER_ONLY){
+            return $nodeRemoved;
+        }
+
+        foreach ($nodeToRemove->getChildren() as $child){
+            $nodeRemoved = $nodeRemoved && $this->removeMobster($child->getData(), $removeSubordinates);
         }
 
         return $nodeRemoved;
+    }
+
+    public function moveMobster(Mobster $mobster, Mobster $newBoss) : void
+    {
+        $mobsterNode = $this->findNode($mobster->getKey());
+        $oldBossNode = $this->findNode( $this->getBossOfMobster($mobster)->getKey() );
+        $newBossNode = $this->findNode($newBoss->getKey());
+
+        if ( !$oldBossNode->removeChildNode($mobsterNode) ){
+            throw new \DomainException(
+            "Could not remove mobster from boss subordinates. Mobster: '{$mobster}'. Boss: '{$oldBossNode}'"
+            );
+        }
+
+        $newBossNode->addChildNode($mobsterNode);
     }
 
     private function removeNode(string $key) : bool

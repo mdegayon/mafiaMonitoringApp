@@ -1,20 +1,23 @@
 <?php
 
+namespace strategy;
 
-use PHPUnit\Framework\TestCase;
+use Src\MafiaOrganization;
 use Src\Mobster;
-use Src\ReplacementBossResolver;
-use Src\strategy\MobsterReplacementStrategy;
-use Src\tree\mafia\MafiaNode;
+use Src\Prison;
+use Src\strategy\ActiveBossFinderStrategy;
+use PHPUnit\Framework\TestCase;
 use Src\tree\mafia\MafiaTree;
-use Src\tree\Node;
 
-class BossReplacementStrategyTest extends TestCase
+class ActiveBossFinderStrategyTest extends TestCase
 {
-    protected Mobster $vito, $mike, $fredo, $sonny, $carlo, $clem, $frankie;
-    protected MafiaTree $corleoneTree;
 
-    private MobsterReplacementStrategy $strategy;
+    protected Mobster $vito, $mike, $fredo, $sonny, $carlo, $clem, $frankie;
+    protected MafiaOrganization $corleonesi;
+
+    protected Prison $prison;
+
+    private ActiveBossFinderStrategy $strategy;
 
     protected function setUp(): void
     {
@@ -29,29 +32,29 @@ class BossReplacementStrategyTest extends TestCase
 
         $this->carlo = new Mobster("Carlo", "Rizzi", "", new \DateTime('1930-09-01'));
 
-        $this->createCorleoneTree();
+        $this->createCorleoneFamily();
 
-        $this->strategy = new MobsterReplacementStrategy($this->corleoneTree);
+        $this->strategy = new ActiveBossFinderStrategy();
     }
 
-    private function createCorleoneTree() : void
+    private function createCorleoneFamily() : void
     {
-        $this->corleoneTree = new MafiaTree($this->vito);
+        $this->corleonesi = new MafiaOrganization($this->vito);
 
-        $this->corleoneTree->addMobster($this->mike, $this->vito);
-        $this->corleoneTree->addMobster($this->sonny, $this->vito);
-        $this->corleoneTree->addMobster($this->fredo, $this->vito);
+        $this->corleonesi->addMobster($this->mike, $this->vito);
+        $this->corleonesi->addMobster($this->sonny, $this->vito);
+        $this->corleonesi->addMobster($this->fredo, $this->vito);
 
-        $this->corleoneTree->addMobster($this->clem, $this->mike);
+        $this->corleonesi->addMobster($this->clem, $this->mike);
 
-        $this->corleoneTree->addMobster($this->carlo, $this->clem);
-        $this->corleoneTree->addMobster($this->frankie, $this->clem);
+        $this->corleonesi->addMobster($this->carlo, $this->clem);
+        $this->corleonesi->addMobster($this->frankie, $this->clem);
     }
 
     public function testCantReplace() : void
     {
-        $this->expectException(DomainException::class);
-        $this->strategy->replaceMobster($this->vito, $this->clem);
+        $this->expectException(\DomainException::class);
+        $this->strategy->findActiveBossFor($this->vito, $this->clem);
     }
 
     public function testReplaceWithNoSubordinates() : void
