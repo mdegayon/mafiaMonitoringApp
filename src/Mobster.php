@@ -12,6 +12,8 @@ class Mobster{
     private String $lastName;
     private String $nickname;
 
+    private bool $hasReplacementBoss;
+
     private \DateTime $recruitmentDate;
 
     const NULL_ID = -1;
@@ -19,11 +21,22 @@ class Mobster{
     public function __construct(String $firstName, String $lastName, String $nickname, \DateTime $recruitment_date)
     {
         $this->state = MafiaState::Active;
+        $this->hasReplacementBoss = false;
 
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->nickname = $nickname;
         $this->recruitmentDate = $recruitment_date;
+    }
+
+    public function HasReplacementBoss(): bool
+    {
+        return $this->hasReplacementBoss;
+    }
+
+    public function setHasReplacementBoss(bool $hasReplacementBoss): void
+    {
+        $this->hasReplacementBoss = $hasReplacementBoss;
     }
 
     public function getRecruitmentDate() : \DateTime
@@ -71,87 +84,9 @@ class Mobster{
             $this->nickname
         );
     }
-
-
-
-    public function getId() : int{
-        return $this->id;
-    }
-
-    public function addSubordinate(Mobster $subordinate): void { 
-        
-        if ($subordinate->boss !== null){
-            $subordinate->boss->removeSubordinate($subordinate);
-        }
-        
-        $subordinate->boss = $this;
-        $this->subordinates[$subordinate->id] = $subordinate;
-    }
     
-    public function removeSubordinate(Mobster $subordinate) : void {        
-        $subordinate->boss = null;
-        unset( $this->subordinates[$subordinate->id] );
-    }
 
-    
-    public function countSubordinates(): int { 
-        $subordinatesCount = 0;
 
-        foreach ($this->subordinates as $subordinate) {
-            $subordinatesCount += 1 + $subordinate->countSubordinates();                
-        }
-        
-        return $subordinatesCount;
-    }
-    
-    public function countDirectSubordinates() : int {        
-        return sizeof($this->subordinates);
-    }
-    
-    public function getBoss() : Mobster|null {
-        return $this->boss;
-    }
-    
-    public function getOldestSubordinate() : Mobster|null{
-        
-        $oldestSubordinate = null;
-        foreach ($this->subordinates as $subordinate) {
 
-            if ($oldestSubordinate == null || $subordinate->isOlder($oldestSubordinate)){
-                $oldestSubordinate = $subordinate;
-            }
-
-            if ($subordinate->getState() != MafiaState::Active){
-                continue;
-            }
-            
-        }
-        
-        return $oldestSubordinate;
-    }
-    
-    public function isOlder(Mobster $other) : bool
-    {
-        return $this->id < $other->id;
-    }
-    
-    public function getSubordinates () : array {
-        return $this->subordinates;
-    }
-    
-    public function changeBossOfSubordinates(Mobster $newBoss) : void {
-
-        foreach ($this->subordinates as $subordinate) {
-            $this->changeBossOfSubordinate($newBoss, $subordinate);
-        }
-    }
-    
-    private function changeBossOfSubordinate(Mobster $newBoss, Mobster $subordinate) : void {
-
-        $this->removeSubordinate($subordinate);
-        if ($newBoss){
-            $newBoss->addSubordinate($subordinate);            
-        }
-    }
 
 }

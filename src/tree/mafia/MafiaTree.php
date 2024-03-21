@@ -2,25 +2,47 @@
 
 namespace Src\tree\mafia;
 
+use Src\Mobster;
 use Src\tree\Node;
 use Src\tree\Tree;
 
 class MafiaTree
 {
     private Tree $mafiaTree;
+    private array $nodesByMobsterKey;
 
-    const   FIRST_RANKS_HIGHER = 1,
-            SECOND_RANKS_HIGHER = -1,
-            RANK_EQUAL = 0;
+    const NO_THRESHOLD = PHP_INT_MAX;
 
-    public function __construct(Node $root)
+    const   REMOVE_MOBSTER_ONLY = 1,
+            REMOVE_MOBSTER_WITH_SUBORDINATES = 2;
+
+    public function __construct(Mobster $rootData)
     {
-        $this->mafiaTree = new Tree($root);
+        $this->mafiaTree = new Tree($rootData);
+        $this->addNodeWithKey($this->mafiaTree->getRoot(), $rootData->getKey());
     }
 
-    public function getDon(): Node
+    private function addNodeWithKey(Node $node, string $key) : void
     {
-        return $this->mafiaTree->root;
+        $this->nodesByMobsterKey[$key] = $node;
+    }
+
+    private function findNode(string $key) : Node {
+        if ( !array_key_exists($key, $this->nodesByMobsterKey)){
+            throw new \DomainException("Cant' find Node with key='$key'");
+        }
+
+        return $this->nodesByMobsterKey[$key];
+    }
+
+    public function getDon(): Mobster
+    {
+        return $this->mafiaTree->getRoot()->getData();
+    }
+
+    public function getDonNode() : Node
+    {
+        return $this->mafiaTree->getRoot();
     }
 
     public function print(): void
@@ -28,34 +50,169 @@ class MafiaTree
         $this->mafiaTree->traverseFromRoot();
     }
 
-    public function addNode(MafiaNode $mobster, MafiaNode $mobsterBoss) : void
+    public function contains(Mobster $mobster) : bool
     {
-        $mobster->setParent($mobsterBoss);
-        $mobsterBoss->addChild($mobster);
+        return array_key_exists($mobster->getKey(), $this->nodesByMobsterKey);
     }
 
-    public function removeNode(MafiaNode $mobsterToRemove)
+    public function countMobsters() : int
     {
-        // TODO Discuss with SYX (should a node know how to remove itself from the tree?)
-        $mobsterToRemove->removeFromOrganization();
+        return count($this->nodesByMobsterKey);
     }
 
-    public function compareNodeRanks(MafiaNode $first, MafiaNode $second) : int
+    public function getBossOfMobster(Mobster $mobster) : ?Mobster
     {
-        $rankComparison = self::RANK_EQUAL;
+        $mobsterNode = $this->findNode($mobster->getKey());
 
-        if ($first->getRank() < $second->getRank()){
-            $rankComparison = self::FIRST_RANKS_HIGHER;
-        }elseif ($first->getRank() > $second->getRank()){
-            $rankComparison = self::SECOND_RANKS_HIGHER;
+        return $mobsterNode->hasParent() ? $mobsterNode->getParent()->getData() : Node::EMPTY_NODE;
+    }
+
+    public function addMobster(Mobster $mobster, Mobster $mobsterBoss) : Node
+    {
+        $mobsterBossNode = $this->findNode($mobsterBoss->getKey());
+        $mobsterNode = $this->mafiaTree->add($mobster, $mobsterBossNode);
+
+        $this->addNodeWithKey($mobsterNode, $mobster->getKey());
+
+        return $mobsterNode;
+    }
+
+    public function removeMobster(Mobster $mobsterToRemove, $removeSubordinates = self::REMOVE_MOBSTER_ONLY ) : bool
+    {
+        $nodeRemoved = false; // TODO SYX Discuss naming conv
+        $nodeToRemove = $this->findNode($mobsterToRemove->getKey());
+        $parentNode =  $nodeToRemove->getParent();
+
+        if($parentNode === Node::EMPTY_NODE){
+            throw new \DomainException(
+        "Can't remove node with no parent. It might likely be the Don. 
+                mobsterToRemove=$mobsterToRemove. Don={$this->getDon()}"
+            );
         }
 
-        return $rankComparison;
+        if ( $this->mafiaTree->remove($mobsterToRemove, $parentNode) ){
+            $nodeRemoved =  $this->removeNode( $mobsterToRemove->getKey() );
+        }
+
+        if ($removeSubordinates === self::REMOVE_MOBSTER_ONLY){
+            return $nodeRemoved;
+        }
+
+        foreach ($nodeToRemove->getChildren() as $child){
+            $nodeRemoved = $nodeRemoved && $this->removeMobster($child->getData(), $removeSubordinates);
+        }
+
+        return $nodeRemoved;
     }
 
-    public function shouldPutNodeUnderSpecialSurveillance(MafiaNode $node) : bool
+    public function moveMobster(Mobster $mobster, Mobster $newBoss) : void
     {
-        return $node->hasNSubordinatesUnder(50);
+        $mobsterNode = $this->findNode($mobster->getKey());
+        $oldBossNode = $this->findNode( $this->getBossOfMobster($mobster)->getKey() );
+        $newBossNode = $this->findNode($newBoss->getKey());
+
+        if ( !$oldBossNode->removeChildNode($mobsterNode) ){
+            throw new \DomainException(
+            "Could not remove mobster from boss subordinates. Mobster: '{$mobster}'. Boss: '{$oldBossNode}'"
+            );
+        }
+
+        $newBossNode->addChildNode($mobsterNode);
+    }
+
+    private function removeNode(string $key) : bool
+    {
+        $nodeRemoved = false;
+        if ($this->nodeExists($key)){
+            unset($this->nodesByMobsterKey[$key]);
+            $nodeRemoved = true;
+        }
+        return $nodeRemoved;
+    }
+
+    private function nodeExists($key) : bool
+    {
+        return array_key_exists($key, $this->nodesByMobsterKey);
+    }
+
+    public function getRank(Mobster $mobster) : int
+    {
+        $node = $this->findNode($mobster->getKey());
+
+        return $this->getRankOfNode($node);
+    }
+
+    private function getRankOfNode(Node $node) : int
+    {
+        $rank = 1;
+        if ( !$node->hasParent() ){
+            return $rank;
+        }
+        $rank = 1 + $this->getRankOfNode($node->getParent());
+
+        return $rank;
+    }
+
+    public function getDirectSubordinates(Mobster $mobster) : array
+    {
+        $directSubordinates = [];
+
+        $mobsterNode = $this->findNode($mobster->getKey());
+        foreach ($mobsterNode->getChildren() as $child){
+            $directSubordinates[] = $child->getData();
+        }
+
+        return $directSubordinates;
+    }
+
+    public function getSubordinates(Mobster $mobster) : array
+    {
+        $mobsterNode = $this->findNode($mobster->getKey());
+        return $this->getSubordinatesOfNode($mobsterNode);
+    }
+
+    private function getSubordinatesOfNode(Node $node) : array
+    {
+        $subordinates = [];
+        $children = $node->getChildren();
+
+        foreach ($children as $key => $child){
+            $subordinates[] = $child->getData();
+            $childSubordinates = $this->getSubordinatesOfNode($child);
+            if (!empty($childSubordinates)){ // TODO SYX DISCUSS Get rid of nesting
+                $subordinates = array_merge($subordinates, $childSubordinates);
+            }
+        }
+
+        return $subordinates;
+    }
+
+    public function countSubordinatesWithThreshold(Mobster $mobster, int $threshold = self::NO_THRESHOLD) : int
+    {
+        if ($threshold <= 0){
+            throw new \DomainException(
+                "Threshold value should be an integer greater than zero. threshold={$threshold}"
+            );
+        }
+        $mobsterNode = $this->findNode($mobster->getKey());
+        return $this->countSubordinatesOfNodeWithThreshold($mobsterNode, $threshold);
+    }
+
+    private function countSubordinatesOfNodeWithThreshold(Node $node, int $threshold, int $count = 0) : int
+    {
+        $subordinatesCount = $count;
+        if ( $subordinatesCount >= $threshold ){
+            return $count;
+        }
+
+        foreach ($node->getChildren() as $child){
+            $subordinatesCount = $this->countSubordinatesOfNodeWithThreshold($child, $threshold, ++$subordinatesCount);
+            if ($subordinatesCount >= $threshold){
+                break;
+            }
+        }
+
+        return $subordinatesCount;
     }
 
 }
