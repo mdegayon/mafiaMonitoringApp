@@ -108,16 +108,9 @@ class MafiaTree
     public function moveMobster(Mobster $mobster, Mobster $newBoss) : void
     {
         $mobsterNode = $this->findNode($mobster->getKey());
-        $oldBossNode = $this->findNode( $this->getBossOfMobster($mobster)->getKey() );
         $newBossNode = $this->findNode($newBoss->getKey());
 
-        if ( !$oldBossNode->removeChildNode($mobsterNode) ){
-            throw new \DomainException(
-            "Could not remove mobster from boss subordinates. Mobster: '{$mobster}'. Boss: '{$oldBossNode}'"
-            );
-        }
-
-        $newBossNode->addChildNode($mobsterNode);
+        $this->mafiaTree->moveNode($mobsterNode, $newBossNode);
     }
 
     private function removeNode(string $key) : bool
