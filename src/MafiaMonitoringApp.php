@@ -85,5 +85,10 @@ class MafiaMonitoringApp
         return $this->bossFinder->findActiveBossFor($position);
     }
 
+    public function print() : void
+    {
+        $this->mafiaOrganization->print();
+    }
+
 
 }

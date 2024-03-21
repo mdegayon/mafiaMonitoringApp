@@ -112,4 +112,9 @@ class MafiaOrganization {
     {
         return $this->mafiaTree->contains($mobster);
     }
+
+    public function print() : void
+    {
+        $this->mafiaTree->print();
+    }
 }
