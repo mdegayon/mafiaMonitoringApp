@@ -6,6 +6,6 @@ enum MafiaState{
     
     case Active;
     case Imprisoned;
-//    case Retired;    You don't get to retire from Mafia
+//    case Retired;    You don't get to retire from La Mafia
     case Deceased;
 }

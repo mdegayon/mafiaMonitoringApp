@@ -6,9 +6,8 @@ class Node
 {
     protected mixed $data;
     protected array $children;
-    protected Node|null $parent = self::EMPTY_NODE;
+    protected ?Node $parent = self::EMPTY_NODE;
 
-    const MISSING_ID = -1;
     const EMPTY_NODE = null;
 
     public function __construct($data, ?Node $parent = Node::EMPTY_NODE)
@@ -28,7 +27,7 @@ class Node
         $this->data = $data;
     }
 
-    public function getParent(): Node|null
+    public function getParent(): ?Node
     {
         return $this->parent;
     }

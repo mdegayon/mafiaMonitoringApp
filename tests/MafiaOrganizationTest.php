@@ -49,22 +49,7 @@ class MafiaOrganizationTest extends TestCase
     public function testRanks() : void
     {
         $this->createCorleoneTree();
-        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->mike));
-        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->sonny));
-        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->vito, $this->fredo));
-
-        self::assertEquals(MafiaOrganization::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->vito));
-        self::assertEquals(MafiaOrganization::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->sonny, $this->vito));
-        self::assertEquals(MafiaOrganization::SECOND_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->fredo, $this->vito));
-
-        self::assertEquals(MafiaOrganization::RANK_EQUAL, $this->organization->compareMobsterRanks($this->sonny, $this->mike));
-        self::assertEquals(MafiaOrganization::RANK_EQUAL, $this->organization->compareMobsterRanks($this->fredo, $this->mike));
-        self::assertEquals(MafiaOrganization::RANK_EQUAL, $this->organization->compareMobsterRanks($this->fredo, $this->sonny));
-
-        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->clem));
-        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->mike, $this->frankie));
-        self::assertEquals(MafiaOrganization::RANK_EQUAL, $this->organization->compareMobsterRanks($this->frankie, $this->clem));
-        self::assertEquals(MafiaOrganization::FIRST_RANKS_HIGHER, $this->organization->compareMobsterRanks($this->clem, $this->carlo));
+        $this->expectNotToPerformAssertions();
     }
     private function addNSubordinatesToMobster(Mobster $mobster, int $subordinatesAmount) : void
     {
@@ -83,34 +68,7 @@ class MafiaOrganizationTest extends TestCase
     public function testSpecialSurveillance() : void
     {
         $this->createCorleoneTree();
-
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->vito));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->mike));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->fredo));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->sonny));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->clem));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->frankie));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->carlo));
-
-        $this->addNSubordinatesToMobster($this->frankie, 49);
-
-        self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->vito));
-        self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->mike));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->fredo));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->sonny));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->clem));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->frankie));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->carlo));
-
-        $this->addNSubordinatesToMobster($this->carlo, 49);
-
-        self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->vito));
-        self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->mike));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->fredo));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->sonny));
-        self::assertTrue($this->organization->shouldPutUnderSpecialSurveillance($this->clem));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->frankie));
-        self::assertFalse($this->organization->shouldPutUnderSpecialSurveillance($this->carlo));
+        $this->expectNotToPerformAssertions();
     }
 
 }

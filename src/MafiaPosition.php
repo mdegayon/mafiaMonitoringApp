@@ -34,5 +34,4 @@ class MafiaPosition {
         $this->boss = $boss;
     }
 
-
 }

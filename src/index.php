@@ -25,5 +25,31 @@
     $app->addMobster($carlo, $clemenza);
 
     $app->print();
+    echo '<br />';
+    echo '<br />';
+
+    $app->sendToPrison($clemenza);
+
+    $app->print();
+    echo '<br />';
+    echo '<br />';
+
+    $app->sendToPrison($mike);
+
+    $app->print();
+    echo '<br />';
+    echo '<br />';
+
+    $app->releaseFromPrison($clemenza);
+
+    $app->print();
+    echo '<br />';
+    echo '<br />';
+
+    $app->releaseFromPrison($mike);
+
+    $app->print();
+    echo '<br />';
+    echo '<br />';
 
     exit;

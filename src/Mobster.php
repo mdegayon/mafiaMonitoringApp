@@ -3,7 +3,6 @@
 namespace Src;
 
 use Src\MafiaState;
-use Src\tree\NodeData;
 
 class Mobster{
 
@@ -15,8 +14,6 @@ class Mobster{
     private bool $hasReplacementBoss;
 
     private \DateTime $recruitmentDate;
-
-    const NULL_ID = -1;
 
     public function __construct(String $firstName, String $lastName, String $nickname, \DateTime $recruitment_date)
     {
@@ -54,10 +51,6 @@ class Mobster{
 
     public function __toString(): string
     {
-        return $this->toString();
-    }
-
-    public function toString(): String {
         if (!empty($this->nickname)) {
             $mobsterAsString = sprintf(
                 "%s \"%s\" %s",

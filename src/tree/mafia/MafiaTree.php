@@ -10,7 +10,6 @@ class MafiaTree
 {
     private Tree $mafiaTree;
     private array $nodesByMobsterKey;
-
     const NO_THRESHOLD = PHP_INT_MAX;
 
     const   REMOVE_MOBSTER_ONLY = 1,
@@ -94,6 +93,7 @@ class MafiaTree
             $nodeRemoved =  $this->removeNode( $mobsterToRemove->getKey() );
         }
 
+        //TODO Check usages of this remove only (and refactor?)
         if ($removeSubordinates === self::REMOVE_MOBSTER_ONLY){
             return $nodeRemoved;
         }

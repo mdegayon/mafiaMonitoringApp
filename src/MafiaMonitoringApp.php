@@ -3,10 +3,14 @@
 namespace Src;
 
 use Src\strategy\ActiveBossFinderStrategy;
-use Src\tree\Node;
 
 class MafiaMonitoringApp
 {
+    const SUBORDINATES_COUNT_FOR_SPECIAL_SURVEILLANCE = 50;
+
+    const   FIRST_RANKS_HIGHER = 1,
+            SECOND_RANKS_HIGHER = -1,
+            RANK_EQUAL = 0;
 
     private Prison $prison;
     private MafiaOrganization $mafiaOrganization;
@@ -29,16 +33,6 @@ class MafiaMonitoringApp
     public function countMobstersInOrganization() : int
     {
         return $this->mafiaOrganization->countMobstersInOrganization();
-    }
-
-    public function shouldPutUnderSpecialSurveillance(Mobster $mobster) : bool
-    {
-        return $this->mafiaOrganization->shouldPutUnderSpecialSurveillance($mobster);
-    }
-
-    public function compareMobsterRanks(Mobster $first, Mobster $second) : int
-    {
-        return $this->mafiaOrganization->compareMobsterRanks($first, $second);
     }
 
     public function isMobsterInPrison(Mobster $mobster) : bool
@@ -80,15 +74,39 @@ class MafiaMonitoringApp
         $this->mafiaOrganization->recoverMobsterPosition($releasedMobster, $oldPosition);
     }
 
-    public function findActiveBossFromPosition(MafiaPosition $position) : Mobster
+    private function findActiveBossFromPosition(MafiaPosition $position) : Mobster
     {
         return $this->bossFinder->findActiveBossFor($position);
+    }
+
+    public function shouldPutUnderSpecialSurveillance(Mobster $mobster) : bool
+    {
+        $mobsterSubordinatesCount = $this->mafiaOrganization->countSubordinatesWithThreshold(
+            $mobster,
+            self::SUBORDINATES_COUNT_FOR_SPECIAL_SURVEILLANCE
+        );
+        return $mobsterSubordinatesCount >= self::SUBORDINATES_COUNT_FOR_SPECIAL_SURVEILLANCE;
+    }
+
+    public function compareMobsterRanks(Mobster $first, Mobster $second) : int
+    {
+        $rankComparison = self::RANK_EQUAL;
+
+        $firstMobsterRank = $this->mafiaOrganization->getRank($first);
+        $secondMobsterRank = $this->mafiaOrganization->getRank($second);
+
+        if ( $firstMobsterRank < $secondMobsterRank ){
+            $rankComparison = self::FIRST_RANKS_HIGHER;
+        }elseif ( $secondMobsterRank < $firstMobsterRank ){
+            $rankComparison = self::SECOND_RANKS_HIGHER;
+        }
+
+        return $rankComparison;
     }
 
     public function print() : void
     {
         $this->mafiaOrganization->print();
     }
-
 
 }

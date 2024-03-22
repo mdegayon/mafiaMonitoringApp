@@ -7,7 +7,6 @@ use Src\tree\mafia\MafiaTree;
 
 class ReplacementFinderStrategy
 {
-
     private MafiaTree $mafiaTree;
 
     public function __construct(MafiaTree $mafiaTree)
@@ -79,6 +78,5 @@ class ReplacementFinderStrategy
         }
         return $replacementBoss;
     }
-
 
 }

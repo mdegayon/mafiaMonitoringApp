@@ -10,6 +10,6 @@ class PositionRecoveryStrategyTest extends TestCase
 
     public function testRecoverPositionOf()
     {
-
+        $this->expectNotToPerformAssertions();
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Src\tree;
 
-use Src\tree\mafia\MafiaNode;
-
 class Tree
 {
     public Node $root;

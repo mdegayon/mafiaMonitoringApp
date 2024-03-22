@@ -3,7 +3,6 @@
 namespace Src\strategy;
 
 use Src\MafiaPosition;
-use Src\MafiaState;
 use Src\Mobster;
 use Src\tree\mafia\MafiaTree;
 
