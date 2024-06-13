@@ -1,4 +1,4 @@
-# Coding test for Aramis Group
+# Coding test
 ## Task
 
 The FBI has captured some Mafia internal records dating from 1985 until the present. 
